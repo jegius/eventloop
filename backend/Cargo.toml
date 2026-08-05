@@ -1,0 +1,21 @@
+[package]
+name = "js-event-loop-visualizer"
+version = "0.1.0"
+edition = "2021"
+description = "JavaScript Event Loop Visualizer Backend - Real-time WebSocket server for ECMAScript 2026 event loop simulation"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+tokio-tungstenite = "0.21"
+futures-util = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.6", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+log = "0.4"
+env_logger = "0.10"
+async-trait = "0.1"
+
+[profile.release]
+opt-level = 3
+lto = true

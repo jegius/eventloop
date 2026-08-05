@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JS Event Loop Visualizer</title>
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>🔄 JavaScript Event Loop Visualizer</h1>
+      <p class="subtitle">ECMAScript 2026 Specification Implementation</p>
+    </header>
+
+    <main class="main-content">
+      <!-- Code Editor Section -->
+      <section class="code-section">
+        <div class="panel-header">
+          <h2>JavaScript Code</h2>
+          <div class="panel-actions">
+            <button id="runCodeBtn" class="btn btn-primary">▶ Run</button>
+            <button id="clearCodeBtn" class="btn btn-secondary">Clear</button>
+          </div>
+        </div>
+        <textarea 
+          id="codeEditor" 
+          class="code-editor"
+          placeholder="Enter your JavaScript code here...
+
+Example:
+console.log('Start');
+
+setTimeout(() => {
+  console.log('Timeout callback');
+}, 1000);
+
+Promise.resolve().then(() => {
+  console.log('Promise resolved');
+});
+
+queueMicrotask(() => {
+  console.log('Microtask');
+});
+
+console.log('End');"
+          spellcheck="false"></textarea>
+      </section>
+
+      <!-- Controls Section -->
+      <section class="controls-section">
+        <div class="control-group">
+          <button id="playBtn" class="btn btn-icon" title="Play">▶️</button>
+          <button id="pauseBtn" class="btn btn-icon" title="Pause">⏸️</button>
+          <button id="stopBtn" class="btn btn-icon" title="Stop">⏹️</button>
+          <button id="stepOverBtn" class="btn btn-icon" title="Step Over">⏭️</button>
+          <button id="stepIntoBtn" class="btn btn-icon" title="Step Into">⤵️</button>
+          <button id="stepOutBtn" class="btn btn-icon" title="Step Out">⤴️</button>
+          <button id="rewindBtn" class="btn btn-icon" title="Rewind">⏪</button>
+        </div>
+        
+        <div class="speed-control">
+          <label for="speedSlider">Speed:</label>
+          <input type="range" id="speedSlider" min="10" max="1000" value="100" step="10">
+          <span id="speedValue">100ms</span>
+        </div>
+        
+        <div class="status-indicator">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Disconnected</span>
+        </div>
+      </section>
+
+      <!-- Visualization Section -->
+      <section class="visualization-section">
+        <!-- Call Stack -->
+        <div class="visual-panel call-stack-panel">
+          <h3>📚 Call Stack</h3>
+          <el-call-stack id="callStack"></el-call-stack>
+        </div>
+
+        <!-- Queues -->
+        <div class="visual-panel queues-panel">
+          <h3>📬 Task Queues</h3>
+          
+          <div class="queue-container">
+            <h4>Microtask Queue</h4>
+            <el-task-queue id="microtaskQueue" queue-type="microtask"></el-task-queue>
+          </div>
+          
+          <div class="queue-container">
+            <h4>Macrotask Queue</h4>
+            <el-task-queue id="macrotaskQueue" queue-type="macrotask"></el-task-queue>
+          </div>
+          
+          <div class="queue-container">
+            <h4>Render Queue</h4>
+            <el-task-queue id="renderQueue" queue-type="render"></el-task-queue>
+          </div>
+          
+          <div class="queue-container">
+            <h4>RAF Queue</h4>
+            <el-task-queue id="rafQueue" queue-type="raf"></el-task-queue>
+          </div>
+          
+          <div class="queue-container">
+            <h4>RIC Queue</h4>
+            <el-task-queue id="ricQueue" queue-type="ric"></el-task-queue>
+          </div>
+        </div>
+
+        <!-- Render Phases -->
+        <div class="visual-panel render-phases-panel">
+          <h3>🎨 Render Phases</h3>
+          <el-render-phases id="renderPhases"></el-render-phases>
+        </div>
+      </section>
+
+      <!-- Console Section -->
+      <section class="console-section">
+        <div class="panel-header">
+          <h2>🖥️ Console</h2>
+          <button id="clearConsoleBtn" class="btn btn-small">Clear</button>
+        </div>
+        <el-console-output id="consoleOutput"></el-console-output>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Built with Rust + TypeScript + Web Components | ECMAScript 2026</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
