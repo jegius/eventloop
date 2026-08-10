@@ -26,6 +26,7 @@ export const PHASES: PhaseDef[] = [
   { key: 'Layout', label: 'Layout', icon: '📏' },
   { key: 'Paint', label: 'Paint', icon: '🖌️' },
   { key: 'Compose', label: 'Compose', icon: '🧩' },
+  { key: 'IdleCallback', label: 'requestIdleCallback', icon: '😴' },
 ];
 
 /**
@@ -65,6 +66,18 @@ export class RenderPhasesController {
       this.completedPhases.add(this.activePhase);
     }
     this.activePhase = phase;
+    this.notify();
+  }
+
+  /**
+   * Завершает рендер: текущая активная фаза помечается как завершённая,
+   * активная фаза сбрасывается (ни одна фаза не остаётся подсвеченной).
+   */
+  clearActivePhase(): void {
+    if (this.activePhase) {
+      this.completedPhases.add(this.activePhase);
+    }
+    this.activePhase = null;
     this.notify();
   }
 

@@ -19,9 +19,9 @@ describe('RenderPhases', () => {
     document.body.appendChild(phases);
   });
 
-  it('отображает все 9 фаз рендера', () => {
+  it('отображает все 10 фаз рендера', () => {
     const phaseElements = phases.shadowRoot?.querySelectorAll('.phase');
-    expect(phaseElements?.length).toBe(9);
+    expect(phaseElements?.length).toBe(10);
   });
 
   it('устанавливает активную фазу', () => {
@@ -44,5 +44,14 @@ describe('RenderPhases', () => {
     const completed = phases.shadowRoot?.querySelector('.phase.completed');
     expect(active).toBeNull();
     expect(completed).toBeNull();
+  });
+
+  it('завершает рендер: сбрасывает активную фазу и помечает её завершённой', () => {
+    phases.setActivePhase('Compose');
+    phases.clearActivePhase();
+    const active = phases.shadowRoot?.querySelector('.phase.active');
+    const completed = phases.shadowRoot?.querySelector('.phase.completed');
+    expect(active).toBeNull();
+    expect(completed?.getAttribute('data-phase')).toBe('Compose');
   });
 });

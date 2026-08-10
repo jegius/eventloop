@@ -28,6 +28,9 @@ export class EventParserService {
     if (eventStr === 'RenderRequested') {
       return { type: 'RenderRequested' };
     }
+    if (eventStr === 'RenderDequeue') {
+      return { type: 'RenderDequeue' };
+    }
 
     // Простой парсер для событий вида "CallStackPush(\"main\")"
     const match = eventStr.match(/^(\w+)\((.*)\)$/s);

@@ -43,6 +43,11 @@ export class RenderPhases extends BaseComponent {
     this.controller.setActivePhase(phase);
   }
 
+  /** Завершает рендер: сбрасывает активную фазу. */
+  public clearActivePhase(): void {
+    this.controller.clearActivePhase();
+  }
+
   /** Сбрасывает состояние фаз. */
   public reset(): void {
     this.controller.reset();
