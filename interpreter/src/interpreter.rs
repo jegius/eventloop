@@ -53,6 +53,8 @@ pub struct Interpreter {
     pub promise_resolve_value: Option<Value>,
     /// Возвращаемое значение функции (для `return`).
     pub return_value: Option<Value>,
+    /// Pending-промисы от `fetch`, ожидающие разрешения (сетевые запросы).
+    pub pending_fetch_promises: Vec<Value>,
 }
 
 impl Interpreter {
@@ -72,6 +74,7 @@ impl Interpreter {
             timer_id: 0,
             promise_resolve_value: None,
             return_value: None,
+            pending_fetch_promises: Vec::new(),
         };
         interpreter.install_builtins();
         interpreter
@@ -1032,8 +1035,13 @@ impl Interpreter {
                         Ok(Value::Undefined)
                     }
                     "fetch" => {
-                        // fetch(url) — возвращает Promise, разрешающийся как обычный промис.
-                        // Создаём Promise в состоянии Fulfilled с ответом.
+                        // fetch(url) — асинхронная сетевая операция.
+                        // В реальном браузере fetch возвращает Promise в состоянии Pending,
+                        // который разрешается только когда придёт ответ от сервера.
+                        // Поэтому `.then()` на fetch-промис НЕ ставит микротаску сразу,
+                        // а добавляет колбэк в `then_callbacks` pending-промиса.
+                        // Разрешение происходит в Event Loop (см. process_microtasks),
+                        // после того как уже поставленные микротаски будут выполнены.
                         let url = args
                             .first()
                             .map(|v| v.to_display_string())
@@ -1051,13 +1059,17 @@ impl Interpreter {
                             "status".to_string(),
                             Value::Number(200.0),
                         );
+                        // Создаём Promise в состоянии Pending и сохраняем ответ,
+                        // чтобы Event Loop мог разрешить его позже.
                         let promise = Value::Promise(Rc::new(RefCell::new(crate::value::Promise {
-                            state: crate::value::PromiseState::Fulfilled,
+                            state: crate::value::PromiseState::Pending,
                             value: Some(Box::new(Value::Object(response))),
                             then_callbacks: Vec::new(),
                             catch_callbacks: Vec::new(),
                             is_fetch: true,
                         })));
+                        // Регистрируем pending-промис для разрешения в Event Loop.
+                        self.pending_fetch_promises.push(promise.clone());
                         Ok(promise)
                     }
                     _ => {

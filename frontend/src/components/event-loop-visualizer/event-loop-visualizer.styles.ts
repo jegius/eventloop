@@ -167,12 +167,30 @@ export function eventLoopVisualizerStyles(): string {
     .log-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 8px;
       padding: 8px 12px;
       background: var(--color-surface-2);
       border-bottom: 1px solid var(--color-border);
       font-weight: 600;
       font-size: 13px;
+    }
+    .log-header .log-count {
+      margin-left: auto;
+    }
+    .btn-clear-log {
+      padding: 3px 10px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+      transition: opacity 0.2s;
+    }
+    .btn-clear-log:hover {
+      opacity: 0.85;
+      color: var(--color-text);
     }
     .log-body {
       flex: 1;

@@ -17,11 +17,10 @@ function escapeHtml(text: string): string {
 /**
  * Возвращает HTML-разметку компонента редактора кода.
  *
- * @param code        Текущий код.
- * @param defaultCode Код по умолчанию (используется, если код пуст).
+ * @param code Текущий код.
  * @returns HTML-строка.
  */
-export function codeEditorTemplate(code: string, defaultCode: string): string {
+export function codeEditorTemplate(code: string): string {
   return `
     <div class="editor">
       <div class="editor-header">
@@ -35,7 +34,7 @@ export function codeEditorTemplate(code: string, defaultCode: string): string {
           class="code-input"
           spellcheck="false"
           placeholder="Введите JavaScript-код..."
-        >${escapeHtml(code || defaultCode)}</textarea>
+        >${escapeHtml(code)}</textarea>
       </div>
       <div class="editor-footer">
         <button class="btn btn-run" id="run-btn">▶ Выполнить</button>

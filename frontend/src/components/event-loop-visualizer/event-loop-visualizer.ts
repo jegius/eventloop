@@ -98,6 +98,9 @@ export class EventLoopVisualizer extends BaseComponent {
     this.query<HTMLButtonElement>('#step-btn')?.addEventListener('click', () => this.getController().stepForward());
     this.query<HTMLButtonElement>('#reset-btn')?.addEventListener('click', () => this.handleReset());
 
+    // Кнопка очистки журнала событий
+    this.query<HTMLButtonElement>('#clear-log-btn')?.addEventListener('click', () => this.clearLog());
+
     // Переключение режима
     this.queryAll<HTMLButtonElement>('.mode-btn').forEach((btn) => {
       btn.addEventListener('click', () => {

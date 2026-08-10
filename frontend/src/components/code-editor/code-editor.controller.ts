@@ -13,10 +13,19 @@
  */
 export class CodeEditorController {
   /** Текущий код. */
-  private code: string = '';
+  private code: string;
 
   /** Колбэк уведомления об изменении состояния. */
   private onChange: (() => void) | null = null;
+
+  /**
+   * Создаёт контроллер редактора кода.
+   *
+   * @param initialCode Начальный код (по умолчанию — пустая строка).
+   */
+  constructor(initialCode: string = '') {
+    this.code = initialCode;
+  }
 
   /** Устанавливает колбэк уведомления об изменении. */
   setOnChange(callback: () => void): void {
