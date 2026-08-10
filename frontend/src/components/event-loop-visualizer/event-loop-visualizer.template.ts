@@ -82,6 +82,7 @@ export function eventLoopVisualizerTemplate(
             <div class="log-header">
               <span>Event Log</span>
               <span class="log-count" id="log-count">0</span>
+              <button class="btn btn-clear-log" id="clear-log-btn">Очистить</button>
             </div>
             <div class="log-body" id="log-body"></div>
           </div>

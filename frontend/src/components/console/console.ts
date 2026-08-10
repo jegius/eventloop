@@ -26,6 +26,19 @@ export class ConsoleComponent extends BaseComponent {
 
   protected render(): void {
     this.update();
+    this.bindEvents();
+  }
+
+  /** Привязывает обработчики событий через делегирование. */
+  private bindEvents(): void {
+    // Делегирование событий на уровне Shadow DOM: обработчик привязывается
+    // один раз и не теряется при перерисовке содержимого через update().
+    this.shadow.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest('#clear-btn')) {
+        this.controller.clear();
+      }
+    });
   }
 
   protected template(): string {

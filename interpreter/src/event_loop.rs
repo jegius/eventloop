@@ -11,6 +11,7 @@ use crate::queues::{
     AnimationFrameQueue, IdleCallbackQueue, MacrotaskQueue, MicrotaskQueue, RenderQueue,
 };
 use crate::renderer::Renderer;
+use crate::value::Value;
 
 /// Результат выполнения Event Loop.
 #[derive(Debug, Clone, Default)]
@@ -232,6 +233,34 @@ impl EventLoopEngine {
         // Максимальное число микрозадач за один checkpoint.
         const MAX_MICROTASKS_PER_CHECKPOINT: usize = 100;
         let mut processed = 0;
+
+        // Разрешаем pending-промисы от fetch (сетевые запросы).
+        // В реальном браузере fetch — асинхронная операция: промис разрешается
+        // только когда придёт ответ от сервера. Поэтому колбэки `.then` от fetch
+        // НЕ ставятся в микротаску сразу, а попадают в `then_callbacks` pending-промиса.
+        // Здесь мы разрешаем такие промисы в начале microtask checkpoint, добавляя
+        // их колбэки в КОНЕЦ очереди микротасок. Это гарантирует, что fetch-колбэки
+        // выполнятся ПОСЛЕ микротасок, поставленных синхронным кодом (например,
+        // `Promise.resolve().then()` и продолжений после `await`), как в браузере.
+        let pending_fetch = std::mem::take(&mut interpreter.pending_fetch_promises);
+        for promise_value in pending_fetch {
+            if let Value::Promise(promise) = promise_value {
+                // Переводим промис в состояние Fulfilled (ответ получен).
+                promise.borrow_mut().state = crate::value::PromiseState::Fulfilled;
+                // Добавляем then_callbacks в конец очереди микротасок.
+                let callbacks = promise.borrow().then_callbacks.clone();
+                let value = promise.borrow().value.clone().map(|v| *v).unwrap_or(Value::Undefined);
+                for cb in callbacks {
+                    let label = cb.display();
+                    interpreter
+                        .microtask_queue
+                        .borrow_mut()
+                        .enqueue(&label, cb, vec![value.clone()]);
+                    self.events
+                        .push(EventLoopEvent::MicrotaskEnqueue(label));
+                }
+            }
+        }
 
         while !interpreter.microtask_queue.borrow().is_empty() && processed < MAX_MICROTASKS_PER_CHECKPOINT {
             let task = interpreter.microtask_queue.borrow_mut().dequeue();

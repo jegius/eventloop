@@ -64,13 +64,15 @@ console.log('10. Конец синхронного кода');
 `;
 
   /** Контроллер состояния кода. */
-  private readonly controller = new CodeEditorController();
+  private readonly controller = new CodeEditorController(CodeEditor.DEFAULT_CODE);
 
   constructor() {
     super();
-    // При изменении кода перерисовываем компонент.
+    // При изменении кода НЕ перерисовываем весь компонент (update()),
+    // т.к. это перезаписывает innerHTML и пересоздаёт textarea,
+    // что приводит к потере фокуса при вводе. Вместо этого обновляем
+    // только подсветку и номера строк, сохраняя DOM и фокус.
     this.controller.setOnChange(() => {
-      this.update();
       this.syncHighlight();
     });
   }
@@ -82,7 +84,7 @@ console.log('10. Конец синхронного кода');
   }
 
   protected template(): string {
-    return codeEditorTemplate(this.controller.getCode(), CodeEditor.DEFAULT_CODE);
+    return codeEditorTemplate(this.controller.getCode());
   }
 
   protected styles(): string {
@@ -95,7 +97,7 @@ console.log('10. Конец синхронного кода');
     const highlight = this.query<HTMLElement>('.highlight');
     if (!input || !highlight) return;
 
-    const code = input.value || CodeEditor.DEFAULT_CODE;
+    const code = input.value;
     const highlighted = hljs.highlight(code, { language: 'javascript' }).value;
     // Разбиваем подсвеченный код на строки, чтобы можно было подсвечивать
     // отдельную строку целиком (не только номер в колонке).
@@ -105,12 +107,6 @@ console.log('10. Конец синхронного кода');
       .join('\n');
 
     this.updateLineNumbers(code);
-
-    // Синхронизируем прокрутку
-    input.addEventListener('scroll', () => {
-      highlight.scrollTop = input.scrollTop;
-      highlight.scrollLeft = input.scrollLeft;
-    });
   }
 
   /** Заполняет колонку с номерами строк. */
@@ -157,12 +153,23 @@ console.log('10. Конец синхронного кода');
   /** Привязывает обработчики событий. */
   private bindEvents(): void {
     const input = this.query<HTMLTextAreaElement>('.code-input');
+    const highlight = this.query<HTMLElement>('.highlight');
     const runBtn = this.query<HTMLButtonElement>('#run-btn');
     const clearBtn = this.query<HTMLButtonElement>('#clear-btn');
 
     input?.addEventListener('input', () => {
+      // Обновляем состояние контроллера. setCode() триггерит notify(),
+      // который вызывает syncHighlight() (см. конструктор), поэтому
+      // отдельный вызов syncHighlight() здесь не требуется.
       this.controller.setCode(input.value);
-      this.syncHighlight();
+    });
+
+    // Синхронизируем прокрутку подсветки с прокруткой textarea.
+    input?.addEventListener('scroll', () => {
+      if (highlight) {
+        highlight.scrollTop = input.scrollTop;
+        highlight.scrollLeft = input.scrollLeft;
+      }
     });
 
     runBtn?.addEventListener('click', () => {
@@ -178,11 +185,12 @@ console.log('10. Конец синхронного кода');
     });
 
     clearBtn?.addEventListener('click', () => {
-      this.controller.clear();
       if (input) {
         input.value = '';
       }
-      this.syncHighlight();
+      // clear() обновляет состояние контроллера и триггерит notify(),
+      // который вызывает syncHighlight() (см. конструктор).
+      this.controller.clear();
     });
   }
 }
