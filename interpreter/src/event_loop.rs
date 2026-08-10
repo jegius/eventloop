@@ -438,6 +438,23 @@ mod tests {
     }
 
     #[test]
+    fn test_fetch_resolves_as_microtask() {
+        // fetch в реальном браузере возвращает Promise, чьи колбэки `.then`
+        // попадают в микротаску (как у обычного промиса), а НЕ в макротаску.
+        // Поэтому fetch-колбэк должен выполниться ДО setTimeout-макрозадачи.
+        let mut engine = EventLoopEngine::new();
+        let result = engine.run(
+            "console.log(1); \
+             fetch('url').then(() => console.log(2)); \
+             setTimeout(() => console.log(3)); \
+             console.log(4);",
+        );
+        // Ожидаемый порядок: 1 4 2 3
+        let output = result.console_output.join(" ");
+        assert_eq!(output, "1 4 2 3", "неверный порядок выполнения: {}", output);
+    }
+
+    #[test]
     fn test_microtask_loop_warning() {
         // Рекурсивная микрозадача: someFuncOne вызывает Promise.resolve().then(someFuncOne).
         // Статический анализ должен обнаружить потенциальное зацикливание микрозадач

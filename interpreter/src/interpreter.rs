@@ -929,16 +929,6 @@ impl Interpreter {
 
                             match this_value {
                                 Some(Value::Promise(p)) => {
-                                    // Для fetch-промиса колбэк попадает в макротаску (сетевой запрос).
-                                    if p.borrow().is_fetch {
-                                        let label = callback.display();
-                                        self.macrotask_queue
-                                            .borrow_mut()
-                                            .enqueue(&label, callback.clone(), Vec::new());
-                                        self.events
-                                            .push(EventLoopEvent::MacrotaskEnqueue(label));
-                                        return Ok(Value::Undefined);
-                                    }
                                     if p.borrow().state == crate::value::PromiseState::Fulfilled {
                                         // Promise уже fulfilled — добавляем колбэк в microtask queue.
                                         // Значение Promise передаётся колбэку как единственный аргумент,
@@ -975,15 +965,6 @@ impl Interpreter {
                             // Извлекаем значение из `this` (Promise).
                             let promise_value = match this_value {
                                 Some(Value::Promise(p)) => {
-                                    if p.borrow().is_fetch {
-                                        let label = callback.display();
-                                        self.macrotask_queue
-                                            .borrow_mut()
-                                            .enqueue(&label, callback.clone(), Vec::new());
-                                        self.events
-                                            .push(EventLoopEvent::MacrotaskEnqueue(label));
-                                        return Ok(Value::Undefined);
-                                    }
                                     p.borrow().value.clone().map(|v| *v).unwrap_or(Value::Undefined)
                                 }
                                 _ => Value::Undefined,
@@ -1003,15 +984,6 @@ impl Interpreter {
                         if let Some(callback) = args.first() {
                             let promise_value = match this_value {
                                 Some(Value::Promise(p)) => {
-                                    if p.borrow().is_fetch {
-                                        let label = callback.display();
-                                        self.macrotask_queue
-                                            .borrow_mut()
-                                            .enqueue(&label, callback.clone(), Vec::new());
-                                        self.events
-                                            .push(EventLoopEvent::MacrotaskEnqueue(label));
-                                        return Ok(Value::Undefined);
-                                    }
                                     p.borrow().value.clone().map(|v| *v).unwrap_or(Value::Undefined)
                                 }
                                 _ => Value::Undefined,
@@ -1060,7 +1032,7 @@ impl Interpreter {
                         Ok(Value::Undefined)
                     }
                     "fetch" => {
-                        // fetch(url) — возвращает Promise, разрешающийся через макротаску.
+                        // fetch(url) — возвращает Promise, разрешающийся как обычный промис.
                         // Создаём Promise в состоянии Fulfilled с ответом.
                         let url = args
                             .first()
