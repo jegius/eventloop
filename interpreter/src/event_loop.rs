@@ -101,12 +101,11 @@ impl EventLoopEngine {
 
         // 4. Обработка очередей (остановка вывода консоли выполняется внутри)
         //
-        // Рендер запрашивается только если есть что рендерить: rAF/rIC колбэки
+        // Рендер запрашивается только если есть что рендерить: rAF колбэки
         // или синхронный код, который мог изменить DOM. Это соответствует поведению
         // браузера, где рендер выполняется не всегда, а только при необходимости.
-        if !interpreter.raf_queue.borrow().is_empty()
-            || !interpreter.ric_queue.borrow().is_empty()
-        {
+        // rIC обрабатывается отдельно в `process_ric` и не требует запроса рендера.
+        if !interpreter.raf_queue.borrow().is_empty() {
             interpreter.render_queue.borrow_mut().request_render();
         }
         self.process_queues(&mut interpreter);
@@ -357,8 +356,17 @@ impl EventLoopEngine {
             self.events.push(EventLoopEvent::RenderPhase(phase));
         }
 
+        // Завершение рендера: удаляем задачу рендера из очереди (для визуализации).
+        self.events.push(EventLoopEvent::RenderDequeue);
+
         // Сбрасываем флаг рендера после выполнения шага.
-        interpreter.render_queue.borrow_mut().reset();
+        // Если во время шага были добавлены новые rAF-колбэки (например,
+        // рекурсивный requestAnimationFrame внутри rAF-колбэка), флаг остаётся
+        // установленным, чтобы обработать их на следующем шаге рендеринга.
+        // В противном случае новый rAF останется в Render Queue без удаления.
+        if interpreter.raf_queue.borrow().is_empty() {
+            interpreter.render_queue.borrow_mut().reset();
+        }
     }
 
     /// Выполняет requestIdleCallback (rIC) колбэки в свободное время (idle period).
@@ -367,6 +375,11 @@ impl EventLoopEngine {
     /// простаивает. Поэтому этот шаг вызывается после обработки каждой макрозадачи
     /// и в конце цикла, а не в рамках шага рендеринга.
     fn process_ric(&mut self, interpreter: &mut Interpreter) {
+        // Если есть колбэки rIC, помечаем фазу рендера IdleCallback (idle period).
+        if !interpreter.ric_queue.borrow().is_empty() {
+            self.events
+                .push(EventLoopEvent::RenderPhase(crate::renderer::RenderPhase::IdleCallback));
+        }
         loop {
             let task = interpreter.ric_queue.borrow_mut().dequeue();
             let Some(task) = task else { break; };

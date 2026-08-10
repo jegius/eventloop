@@ -246,9 +246,18 @@ export class EventLoopVisualizerController {
         c.executionIndicator?.moveTo('ric');
         // rIC удаляется из Render Queue.
         c.renderQueue.dequeue();
+        // Показываем фазу рендера для rIC (idle period).
+        c.renderPhases.setActivePhase('IdleCallback');
         break;
       case 'RenderRequested':
         c.renderQueue.enqueue('render');
+        break;
+      case 'RenderDequeue':
+        // Рендер завершён — удаляем задачу рендера из Render Queue.
+        c.renderQueue.dequeue();
+        // Сбрасываем активную фазу рендера, чтобы ни одна фаза не оставалась
+        // подсвеченной после завершения рендера.
+        c.renderPhases.clearActivePhase();
         break;
       case 'RenderPhase':
         // Поток исполнения находится в фазе рендера.

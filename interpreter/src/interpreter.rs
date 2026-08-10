@@ -890,6 +890,11 @@ impl Interpreter {
                                 .enqueue("requestAnimationFrame", callback.clone());
                             self.events
                                 .push(EventLoopEvent::RafEnqueue("requestAnimationFrame".to_string()));
+                            // Запрашиваем рендер: rAF-колбэк должен быть обработан
+                            // на следующем шаге рендеринга (update the rendering).
+                            // Без этого флага `process_raf_and_render` пропустит
+                            // обработку rAF, и задача останется в Render Queue.
+                            self.render_queue.borrow_mut().request_render();
                         }
                         Ok(Value::Undefined)
                     }

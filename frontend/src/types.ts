@@ -13,7 +13,8 @@ export type RenderPhase =
   | 'RenderTree'
   | 'Layout'
   | 'Paint'
-  | 'Compose';
+  | 'Compose'
+  | 'IdleCallback';
 
 /** Событие Event Loop (соответствует EventLoopEvent в Rust). */
 export type EventLoopEvent =
@@ -29,6 +30,7 @@ export type EventLoopEvent =
   | { type: 'RicEnqueue'; label: string }
   | { type: 'RicDequeue'; label: string }
   | { type: 'RenderRequested' }
+  | { type: 'RenderDequeue' }
   | { type: 'RenderPhase'; phase: RenderPhase }
   | { type: 'ConsoleLog'; message: string }
   | { type: 'Warning'; message: string };

@@ -35,6 +35,8 @@ pub enum RenderPhase {
     Paint,
     /// Композиция слоёв (Compose).
     Compose,
+    /// Выполнение колбэков requestIdleCallback (idle period).
+    IdleCallback,
 }
 
 impl RenderPhase {
@@ -50,6 +52,7 @@ impl RenderPhase {
             RenderPhase::Layout => "Layout",
             RenderPhase::Paint => "Paint",
             RenderPhase::Compose => "Compose",
+            RenderPhase::IdleCallback => "requestIdleCallback",
         }
     }
 }

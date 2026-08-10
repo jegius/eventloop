@@ -34,6 +34,8 @@ pub enum EventLoopEvent {
     RicDequeue(String),
     /// Запрос рендера.
     RenderRequested,
+    /// Завершение рендера (удаление задачи рендера из очереди).
+    RenderDequeue,
     /// Фаза рендера.
     RenderPhase(RenderPhase),
     /// Вывод в консоль.
