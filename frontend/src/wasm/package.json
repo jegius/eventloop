@@ -1,0 +1,17 @@
+{
+  "name": "js-eventloop-interpreter",
+  "type": "module",
+  "description": "Интерпретатор JavaScript с реализацией Event Loop по стандарту ECMAScript 2026",
+  "version": "0.1.0",
+  "license": "MIT",
+  "files": [
+    "js_eventloop_interpreter_bg.wasm",
+    "js_eventloop_interpreter.js",
+    "js_eventloop_interpreter.d.ts"
+  ],
+  "main": "js_eventloop_interpreter.js",
+  "types": "js_eventloop_interpreter.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

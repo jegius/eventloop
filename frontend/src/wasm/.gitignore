@@ -1,0 +1,18 @@
+# Сгенерированные wasm-pack файлы исключаются из репозитория,
+# НО скомпилированный WASM-модуль (js_eventloop_interpreter_bg.wasm)
+# и его JS-обёртка должны быть закоммичены, чтобы GitHub Pages
+# мог собрать фронтенд без пересборки Rust-интерпретатора.
+
+# Исключаем всё по умолчанию
+*
+
+# Разрешаем коммит скомпилированного WASM-модуля и обёртки
+!js_eventloop_interpreter_bg.wasm
+!js_eventloop_interpreter_bg.wasm.d.ts
+!js_eventloop_interpreter.js
+!js_eventloop_interpreter.d.ts
+!loader.ts
+!package.json
+
+# Разрешаем коммит самого .gitignore
+!.gitignore
